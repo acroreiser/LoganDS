@@ -8330,7 +8330,7 @@ wl_cfg80211_netdev_notifier_call(struct notifier_block * nb,
 					WL_ERR(("%s : [NETDEV_DOWN] work_pending (%d th)\n",
 						__FUNCTION__, refcnt));
 				set_current_state(TASK_INTERRUPTIBLE);
-				schedule_timeout(100);
+				schedule_timeout(HZ);
 				set_current_state(TASK_RUNNING);
 				refcnt++;
 			}
