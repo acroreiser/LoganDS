@@ -1136,8 +1136,9 @@ void __init vm_area_add_early(struct vm_struct *vm)
 		if (tmp->addr >= vm->addr) {
 			BUG_ON(tmp->addr < vm->addr + vm->size);
 			break;
-		} else
+		} else {
 			BUG_ON(tmp->addr + tmp->size > vm->addr);
+		}
 	}
 	vm->next = *p;
 	*p = vm;
@@ -1194,6 +1195,7 @@ void __init vmalloc_init(void)
 
 	vmap_area_pcpu_hole = VMALLOC_END;
 
+	pr_info("vmalloc_init complete\n");
 	vmap_initialized = true;
 }
 

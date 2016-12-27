@@ -27,6 +27,7 @@
 #include <linux/mutex.h>
 #include <linux/timer.h>
 #include <linux/wait.h>
+#include <linux/oom.h>
 #include <linux/blockgroup_lock.h>
 #include <linux/percpu_counter.h>
 #ifdef __KERNEL__
@@ -2124,6 +2125,18 @@ static inline unsigned int ext4_flex_bg_size(struct ext4_sb_info *sbi)
 do {								\
 	if ((errno))						\
 		__ext4_std_error((sb), __func__, __LINE__, (errno));	\
+} while (0)
+
+#define ext4_lmk_disable(sb, adj)				\
+do {								\
+	if(test_opt(sb, ERRORS_PANIC))				\
+		disable_lmk_adjsave(current, adj);		\
+} while (0)
+
+#define ext4_lmk_enable(sb, adj)				\
+do {								\
+	if(test_opt(sb, ERRORS_PANIC))				\
+		enable_lmk_adjrestore(current, adj);		\
 } while (0)
 
 #ifdef CONFIG_SMP

@@ -942,10 +942,12 @@ static int ext4_mb_get_buddy_page_lock(struct super_block *sb,
 	int block, pnum, poff;
 	int blocks_per_page;
 	struct page *page;
+	int adj = 0;
 
 	e4b->bd_buddy_page = NULL;
 	e4b->bd_bitmap_page = NULL;
 
+	ext4_lmk_disable(inode->i_sb, adj);
 	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
 	/*
 	 * the buddy cache inode stores the block bitmap
@@ -956,13 +958,16 @@ static int ext4_mb_get_buddy_page_lock(struct super_block *sb,
 	pnum = block / blocks_per_page;
 	poff = block % blocks_per_page;
 	page = find_or_create_page(inode->i_mapping, pnum, GFP_NOFS);
-	if (!page)
+	if (!page) {
+		ext4_lmk_enable(inode->i_sb, adj);
 		return -EIO;
+	}
 	BUG_ON(page->mapping != inode->i_mapping);
 	e4b->bd_bitmap_page = page;
 	e4b->bd_bitmap = page_address(page) + (poff * sb->s_blocksize);
 
 	if (blocks_per_page >= 2) {
+		ext4_lmk_enable(inode->i_sb, adj);
 		/* buddy and bitmap are on the same page */
 		return 0;
 	}
@@ -971,8 +976,10 @@ static int ext4_mb_get_buddy_page_lock(struct super_block *sb,
 	pnum = block / blocks_per_page;
 	poff = block % blocks_per_page;
 	page = find_or_create_page(inode->i_mapping, pnum, GFP_NOFS);
-	if (!page)
+	if (!page) {
+		ext4_lmk_enable(inode->i_sb, adj);
 		return -EIO;
+	}
 	BUG_ON(page->mapping != inode->i_mapping);
 	e4b->bd_buddy_page = page;
 	return 0;
@@ -1074,6 +1081,7 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
 	struct ext4_group_info *grp;
 	struct ext4_sb_info *sbi = EXT4_SB(sb);
 	struct inode *inode = sbi->s_buddy_cache;
+	int adj = 0;
 
 	mb_debug(1, "load group %u\n", group);
 
@@ -1097,6 +1105,7 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
 			return ret;
 	}
 
+	ext4_lmk_disable(inode->i_sb, adj);
 	/*
 	 * the buddy cache inode stores the block bitmap
 	 * and buddy information in consecutive blocks.
@@ -1175,9 +1184,11 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
 	BUG_ON(e4b->bd_bitmap_page == NULL);
 	BUG_ON(e4b->bd_buddy_page == NULL);
 
+	ext4_lmk_enable(inode->i_sb, adj);
 	return 0;
 
 err:
+	ext4_lmk_enable(inode->i_sb, adj);
 	if (page)
 		page_cache_release(page);
 	if (e4b->bd_bitmap_page)

@@ -65,6 +65,21 @@ static inline void oom_killer_enable(void)
 	oom_killer_disabled = false;
 }
 
+#define disable_lmk_adjsave(p, save_adj)			\
+do {								\
+	task_lock(p);						\
+	save_adj = p->signal->oom_score_adj;			\
+	p->signal->oom_score_adj = -1;				\
+	task_unlock(p);						\
+} while (0)
+
+#define enable_lmk_adjrestore(p, restore_adj)			\
+do {								\
+	task_lock(p);						\
+	p->signal->oom_score_adj = restore_adj;			\
+	task_unlock(p);						\
+} while (0)
+
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
 
 /* sysctls */

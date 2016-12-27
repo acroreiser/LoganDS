@@ -51,6 +51,17 @@ struct gpio_keys_drvdata {
 	struct gpio_button_data data[0];
 };
 
+int gpio_keys_check(void)
+{
+	int i, state = 0;
+
+	state = state | (gpio_get_value_cansleep(10) ? 0 : 1);
+	printk("[KEY] %s : %d\n", __func__, state);
+	
+	return state;
+}
+EXPORT_SYMBOL(gpio_keys_check);
+
 /*
  * SYSFS interface for enabling/disabling keys and switches:
  *
@@ -335,6 +346,7 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 		if (state)
 			input_event(input, type, button->code, button->value);
 	} else {
+		printk("%s, code=%d, state =%d\n", __func__ ,button->code, !!state);
 		input_event(input, type, button->code, !!state);
 	}
 	input_sync(input);
@@ -358,6 +370,8 @@ static void gpio_keys_gpio_timer(unsigned long _data)
 static irqreturn_t gpio_keys_gpio_isr(int irq, void *dev_id)
 {
 	struct gpio_button_data *bdata = dev_id;
+
+	printk("\n Debug: gpio_keys_gpio_isr called \n");
 
 	BUG_ON(irq != bdata->irq);
 
