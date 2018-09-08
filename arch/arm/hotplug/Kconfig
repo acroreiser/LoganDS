@@ -1,0 +1,9 @@
+config MSM_HOTPLUG
+	bool
+	depends on SMP && HOTPLUG
+
+config INTELLI_PLUG
+    bool "Enable intelli-plug cpu hotplug driver"
+    depends on SMP && HOTPLUG
+    help
+      Generic Intelli-plug cpu hotplug driver for ARM SOCs

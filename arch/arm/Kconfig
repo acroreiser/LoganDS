@@ -1641,6 +1641,8 @@ config HOTPLUG_CPU
 	  Say Y here to experiment with turning CPUs off and on.  CPUs
 	  can be controlled through /sys/devices/system/cpu.
 
+source arch/arm/hotplug/Kconfig
+
 config LOCAL_TIMERS
 	bool "Use local timer interrupts"
 	depends on SMP
