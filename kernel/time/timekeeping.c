@@ -21,6 +21,9 @@
 #include <linux/tick.h>
 #include <linux/stop_machine.h>
 
+extern ktime_t ntp_get_next_leap(void);
+extern int __do_adjtimex(struct timex *);
+
 /* Structure holding internal timekeeping values. */
 struct timekeeper {
 	/* Current clocksource used for timekeeping. */
@@ -30,6 +33,8 @@ struct timekeeper {
 	/* The shift value of the current clocksource. */
 	int	shift;
 
+	/* CLOCK_MONOTONIC time value of a pending leap-second*/
+	ktime_t	next_leap_ktime;
 	/* Number of clock cycles in one NTP interval. */
 	cycle_t cycle_interval;
 	/* Number of clock shifted nano seconds in one NTP interval. */
@@ -170,6 +175,17 @@ static inline s64 timekeeping_get_ns_raw(void)
 
 	/* return delta convert to nanoseconds. */
 	return clocksource_cyc2ns(cycle_delta, clock->mult, clock->shift);
+}
+
+/*
+ *   tk_update_leap_state - helper to update the next_leap_ktime
+ */
+static inline void tk_update_leap_state(struct timekeeper *tk)
+{
+	tk->next_leap_ktime = ntp_get_next_leap();
+	if (tk->next_leap_ktime.tv64 != KTIME_MAX)
+		/* Convert to monotonic time */
+		tk->next_leap_ktime = ktime_sub(tk->next_leap_ktime, tk->offs_real);
 }
 
 /* must hold write on timekeeper.lock */
@@ -1272,6 +1288,16 @@ ktime_t ktime_get_monotonic_offset(void)
 }
 EXPORT_SYMBOL_GPL(ktime_get_monotonic_offset);
 
+/*
+ * do_adjtimex() - Accessor function to NTP __do_adjtimex function
+ */
+int do_adjtimex(struct timex *txc)
+{
+	int ret;
+	ret = __do_adjtimex(txc);
+	tk_update_leap_state(&timekeeper);
+	return ret;
+}
 
 /**
  * xtime_update() - advances the timekeeping infrastructure
