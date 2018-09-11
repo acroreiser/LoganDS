@@ -1030,7 +1030,7 @@ grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
 	}
 	block = index << sizebits;
 	/* Create a page with the proper size buffers.. */
-	page = grow_dev_page(bdev, block, index, size);
+	page = grow_dev_page(bdev, block, index, size, gfp);
 	if (!page)
 		return 0;
 	unlock_page(page);
@@ -1039,7 +1039,7 @@ grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
 }
 
 static struct buffer_head *
-__getblk_slow(struct block_device *bdev, sector_t block, int size)
+__getblk_slow(struct block_device *bdev, sector_t block, int size gfp_t gfp)
 {
 	/* Size must be multiple of hard sectorsize */
 	if (unlikely(size & (bdev_logical_block_size(bdev)-1) ||
