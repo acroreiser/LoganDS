@@ -950,7 +950,7 @@ init_page_buffers(struct page *page, struct block_device *bdev,
  */
 static struct page *
 grow_dev_page(struct block_device *bdev, sector_t block,
-		pgoff_t index, int size)
+		pgoff_t index, int size, gfp_t gfp)
 {
 	struct inode *inode = bdev->bd_inode;
 	struct page *page;
