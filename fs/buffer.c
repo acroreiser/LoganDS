@@ -1364,30 +1364,6 @@ __find_get_block(struct block_device *bdev, sector_t block, unsigned size)
 EXPORT_SYMBOL(__find_get_block);
 
 /*
- * __getblk will locate (and, if necessary, create) the buffer_head
- * which corresponds to the passed block_device, block and size. The
- * returned buffer has its reference count incremented.
- *
- * __getblk() cannot fail - it just keeps trying.  If you pass it an
- * illegal block number, __getblk() will happily return a buffer_head
- * which represents the non-existent block.  Very weird.
- *
- * __getblk() will lock up the machine if grow_dev_page's try_to_free_buffers()
- * attempt is failing.  FIXME, perhaps?
- */
-struct buffer_head *
-__getblk(struct block_device *bdev, sector_t block, unsigned size)
-{
-	struct buffer_head *bh = __find_get_block(bdev, block, size);
-
-	might_sleep();
-	if (bh == NULL)
-		bh = __getblk_slow(bdev, block, size);
-	return bh;
-}
-EXPORT_SYMBOL(__getblk);
-
-/*
  * Do async read-ahead on a buffer..
  */
 void __breadahead(struct block_device *bdev, sector_t block, unsigned size)
