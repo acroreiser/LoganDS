@@ -35,6 +35,7 @@ struct timekeeper {
 
 	/* CLOCK_MONOTONIC time value of a pending leap-second*/
 	ktime_t	next_leap_ktime;
+	ktime_t	offs_real;
 	/* Number of clock cycles in one NTP interval. */
 	cycle_t cycle_interval;
 	/* Number of clock shifted nano seconds in one NTP interval. */
