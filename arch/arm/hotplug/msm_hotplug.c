@@ -29,6 +29,9 @@
 #include <linux/kernel_stat.h>
 #include <linux/tick.h>
 
+#define cputime64_add(__a, __b)		((__a) + (__b))
+#define cputime64_sub(__a, __b)		((__a) - (__b))
+
 #define MSM_HOTPLUG			"msm_hotplug"
 #define HOTPLUG_ENABLED			0
 #define DEFAULT_UPDATE_RATE		50
@@ -53,13 +56,13 @@
 static unsigned int debug = 0;
 module_param_named(debug_mask, debug, uint, 0644);
 
-unsigned int msm_enabled;
+unsigned int msm_enabled = 1;
 EXPORT_SYMBOL(msm_enabled);
 
 unsigned int mc_eco = 1;
 EXPORT_SYMBOL(mc_eco);
 
-unsigned int max_cpus_on = 4;
+unsigned int max_cpus_on = 2;
 EXPORT_SYMBOL(max_cpus_on);
 
 unsigned int min_cpus_on = 1;
@@ -165,13 +168,13 @@ static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
 	cputime64_t busy_time;
 
 	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-	busy_time = cputime64_add(kstat_cpu(cpu).cpustat.user,
-			kstat_cpu(cpu).cpustat.system);
+	busy_time = cputime64_add(kcpustat_cpu(cpu).cpustat[CPUTIME_USER],
+			kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM]);
 
-	busy_time = cputime64_add(busy_time, kstat_cpu(cpu).cpustat.irq);
-	busy_time = cputime64_add(busy_time, kstat_cpu(cpu).cpustat.softirq);
-	busy_time = cputime64_add(busy_time, kstat_cpu(cpu).cpustat.steal);
-	busy_time = cputime64_add(busy_time, kstat_cpu(cpu).cpustat.nice);
+	busy_time = cputime64_add(busy_time, kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ]);
+	busy_time = cputime64_add(busy_time, kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ]);
+	busy_time = cputime64_add(busy_time, kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL]);
+	busy_time = cputime64_add(busy_time, kcpustat_cpu(cpu).cpustat[CPUTIME_NICE]);
 
 	idle_time = cputime64_sub(cur_wall_time, busy_time);
 	if (wall)

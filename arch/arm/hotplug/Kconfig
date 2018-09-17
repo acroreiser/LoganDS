@@ -1,5 +1,6 @@
 config MSM_HOTPLUG
 	bool
+	default y
 	depends on SMP && HOTPLUG
 
 config INTELLI_PLUG
