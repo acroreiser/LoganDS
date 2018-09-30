@@ -44,7 +44,7 @@
 #endif
 
 #define PLL_VAL_FOR_TURBO_1P2G	1200000
-#define PLL_VAL_FOR_TURBO_1G	1200000
+#define PLL_VAL_FOR_TURBO_1G	999999
 
 #ifdef CONFIG_KONA_TMON
 #include <linux/broadcom/kona_tmon.h>
